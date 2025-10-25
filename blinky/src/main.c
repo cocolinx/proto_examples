@@ -5,9 +5,7 @@
 #include <modem/nrf_modem_lib.h>
 #include <zephyr/drivers/gpio.h>
 
-#define PIN_LED_0       23
-#define PIN_LED_1       24
-#define PIN_LED_2       25
+#define PIN_LED_0       16
 #define SLEEP_TIME_MS   1000
 
 LOG_MODULE_REGISTER(main_blinky, CONFIG_LOG_DEFAULT_LEVEL);
@@ -27,8 +25,6 @@ int main(void)
 
     // low(on), high(off)
     gpio_pin_configure(leds, PIN_LED_0, GPIO_OUTPUT_HIGH);
-    gpio_pin_configure(leds, PIN_LED_1, GPIO_OUTPUT_HIGH);
-    gpio_pin_configure(leds, PIN_LED_2, GPIO_OUTPUT_HIGH);
     
     while(iter--){
         ret = gpio_pin_set_raw(leds, PIN_LED_0, 0);
@@ -36,20 +32,6 @@ int main(void)
         k_msleep(SLEEP_TIME_MS);
         ret = gpio_pin_set_raw(leds, PIN_LED_0, 1);
         LOG_INF("turn off: %d", PIN_LED_0);
-        k_msleep(SLEEP_TIME_MS);
-        
-        ret = gpio_pin_set_raw(leds, PIN_LED_1, 0);
-        LOG_INF("turn on: %d", PIN_LED_1);
-        k_msleep(SLEEP_TIME_MS);
-        ret = gpio_pin_set_raw(leds, PIN_LED_1, 1);
-        LOG_INF("turn off: %d", PIN_LED_1);
-        k_msleep(SLEEP_TIME_MS);
-
-        ret = gpio_pin_set_raw(leds, PIN_LED_2, 0);
-        LOG_INF("turn on: %d", PIN_LED_2);
-        k_msleep(SLEEP_TIME_MS);
-        ret = gpio_pin_set_raw(leds, PIN_LED_2, 1);
-        LOG_INF("turn off: %d", PIN_LED_2);
         k_msleep(SLEEP_TIME_MS);
     }
 

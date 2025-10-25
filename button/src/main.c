@@ -6,7 +6,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #define DEBOUNCE_MS 20
-#define PIN_BUTTON1 18
+#define PIN_BUTTON_0 23
 
 LOG_MODULE_REGISTER(main_button, CONFIG_LOG_DEFAULT_LEVEL);
 static const struct device *btn = DEVICE_DT_GET(DT_NODELABEL(gpio0));
@@ -22,7 +22,7 @@ static void btn_isr(const struct device *port, struct gpio_callback *cb, uint32_
 
 static void btn_debounce_work_handler(struct k_work *work)
 {
-    int v = gpio_pin_get_raw(btn, PIN_BUTTON1); 
+    int v = gpio_pin_get_raw(btn, PIN_BUTTON_0); 
     bool pressed = (v == 0) ? true : false;
     if(pressed) LOG_INF("button pressed");
     else LOG_INF("button released");
@@ -34,12 +34,12 @@ int main(void)
     
     LOG_INF("=====BUTTON EXAMPLE=====");
     
-    gpio_pin_configure(btn, PIN_BUTTON1, GPIO_INPUT | GPIO_PULL_UP);
-    gpio_pin_interrupt_configure(btn, PIN_BUTTON1, GPIO_INT_DISABLE);
+    gpio_pin_configure(btn, PIN_BUTTON_0, GPIO_INPUT);
+    gpio_pin_interrupt_configure(btn, PIN_BUTTON_0, GPIO_INT_DISABLE);
 
-    gpio_init_callback(&btn_cb, btn_isr, BIT(PIN_BUTTON1));
+    gpio_init_callback(&btn_cb, btn_isr, BIT(PIN_BUTTON_0));
     gpio_add_callback(btn, &btn_cb);
-    gpio_pin_interrupt_configure(btn, PIN_BUTTON1, GPIO_INT_EDGE_BOTH); // rising, falling
+    gpio_pin_interrupt_configure(btn, PIN_BUTTON_0, GPIO_INT_EDGE_BOTH); // rising, falling
 
     LOG_INF("press button to test!");
 

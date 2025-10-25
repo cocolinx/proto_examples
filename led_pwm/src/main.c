@@ -8,7 +8,7 @@
 
 LOG_MODULE_REGISTER(main_pwm, CONFIG_LOG_DEFAULT_LEVEL);
 
-/*pin 0.28*/
+/*pin 0.20*/
 static const struct device *led_pwm = DEVICE_DT_GET(DT_NODELABEL(pwm0));
 
 int main(void)
