@@ -12,12 +12,11 @@ LOG_MODULE_REGISTER(main_flash, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const struct device *flash_dev = DEVICE_DT_GET(DT_ALIAS(by25q0));
 
-
-const uint8_t erased[] = { 0xff, 0xff, 0xff, 0xff };
+const uint8_t erased[] = { 0xff, 0xff, 0xff, 0xff , 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 void single_sector_test(const struct device *flash_dev)
 {
-	const uint8_t expected[] = { 0x55, 0xaa, 0x66, 0x99 };
+	const uint8_t expected[] = "hello world";
 
 	const size_t len = sizeof(expected);
 	uint8_t buf[sizeof(expected)];
@@ -71,6 +70,7 @@ void single_sector_test(const struct device *flash_dev)
 
 	if (memcmp(expected, buf, len) == 0) {
 		LOG_INF("Data read matches data written. Good!!");
+		LOG_INF("read data: %.*s", len, buf);
 	} else {
 		const uint8_t *wp = expected;
 		const uint8_t *rp = buf;
