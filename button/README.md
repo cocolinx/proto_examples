@@ -1,6 +1,6 @@
 # Example: Button
 
-This is a simple Button Example for CocoLinx device.
+This is a simple Button trigger Example for CocoLinx device.
 
 -----
 ### Setup

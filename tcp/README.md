@@ -2,7 +2,7 @@
 
 This is a simple TCP Example for CocoLinx device.
 
-Test for connecting to echo server.
+Test for connecting to cocolinx echo server.
 
 You receive the exact same string you sent back.
 

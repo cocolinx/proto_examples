@@ -1,6 +1,8 @@
  # Example: Temperature
 
-These are simple measuring Temperature Example Codes for CocoLinx device.
+This is a simple measuring Temperature Example Code for CocoLinx device.
+
+The temperature sensor is built into the proto.
 
 -----
 ### Setup
