@@ -66,7 +66,13 @@ static void sweep_gpio0(const uint8_t *pins, size_t cnt)
 
 int main(void)
 {
-    nrf_modem_lib_init();
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0) {
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+        return 0;
+    }
+    
     LOG_INF("=====TEST_PINS EXAMPLE=====");
 
     LOG_INF("=== gpio0 pin sweep start ===");

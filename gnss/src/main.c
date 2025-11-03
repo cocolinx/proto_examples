@@ -8,7 +8,6 @@
 
 LOG_MODULE_REGISTER(main_gnss, CONFIG_LOG_DEFAULT_LEVEL);
 
-static struct nrf_modem_gnss_nmea_data_frame gnss_nmea_data;
 static struct nrf_modem_gnss_pvt_data_frame agnss_data;
 
 static void gnss_event_handler(int event)
@@ -22,19 +21,6 @@ static void gnss_event_handler(int event)
 		if (retval) {
 			LOG_ERR("nrf_modem_gnss_read failed, err %d", retval);
 		}
-		/* use this log when debug */
-        // LOG_INF("EVT_PVT flags: %d," agnss_data.flags);
-        // for (int i = 0; i < NRF_MODEM_GNSS_MAX_SATELLITES; ++i) {
-        //     /* SV number 0 indicates no satellite */	
-        //     if (agnss_data.sv[i].sv) {
-        //         LOG_INF("SV:%3d sig: %d c/n0:%4d el:%3d az:%3d in-fix: %d unhealthy: %d",
-        //         agnss_data.sv[i].sv, agnss_data.sv[i].signal, agnss_data.sv[i].cn0,
-        //         agnss_data.sv[i].elevation, agnss_data.sv[i].azimuth,
-        //         (agnss_data.sv[i].flags & NRF_MODEM_GNSS_SV_FLAG_USED_IN_FIX) ? 1 : 0,
-        //         (agnss_data.sv[i].flags & NRF_MODEM_GNSS_SV_FLAG_UNHEALTHY) ? 1 : 0);
-        //     }
-        // }
-
         if (agnss_data.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
 			LOG_INF("latitude:   %f", agnss_data.latitude);
         	LOG_INF("longitude:  %f", agnss_data.longitude);
@@ -72,27 +58,40 @@ static void gnss_event_handler(int event)
 
 int main(void)
 {
-    nrf_modem_lib_init();
-    LOG_INF("=====GNSS EXAMPLE=====");
-
     int err;
+    err = nrf_modem_lib_init();
+    if(err < 0)
+        LOG_ERR("Unable to initialize modem lib. (err: %i)", err);
+		
+    LOG_INF("=====GNSS EXAMPLE=====");
 	
-	lte_lc_system_mode_set(LTE_LC_SYSTEM_MODE_LTEM_GPS, LTE_LC_SYSTEM_MODE_PREFER_LTEM);
+	err = lte_lc_system_mode_set(LTE_LC_SYSTEM_MODE_LTEM_GPS, LTE_LC_SYSTEM_MODE_PREFER_LTEM);
+	if(err < 0) {
+		LOG_ERR("Falied to set lte system mode %d", err);
+		return 0;
+	}
 
 	err = nrf_modem_at_printf("AT%%XCOEX0=1,1,1565,1586");
+	if(err != 0) {
+		LOG_ERR("Falied to set modem %d", err);
+		return 0;
+	}
 
-    lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS);
-
+    err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS);
+	if(err < 0) {
+		LOG_ERR("Falied to set lte func mode %d", err);
+		return 0;
+	}
 
     err = nrf_modem_gnss_event_handler_set(gnss_event_handler);
-	if (err) {
+	if (err != 0) {
 		LOG_ERR("Failed to set GNSS event handler %d", err);
 		return 0;
 	}
 
 	uint16_t nmea_mask = NRF_MODEM_GNSS_NMEA_GGA_MASK;
 	err = nrf_modem_gnss_nmea_mask_set(nmea_mask);
-	if (err) {
+	if (err < 0) {
 		LOG_ERR("Failed to set GNSS NMEA mask %d", err);
 		return 0;
 	}
@@ -100,18 +99,18 @@ int main(void)
 	/* This use case flag should always be set. */
 	uint8_t use_case = NRF_MODEM_GNSS_USE_CASE_MULTIPLE_HOT_START;
 	err = nrf_modem_gnss_use_case_set(use_case);
-	if (err) {
-		LOG_WRN("Failed to set GNSS use case %d", err);
+	if (err < 0) {
+		LOG_ERR("Failed to set GNSS use case %d", err);
 	}
 
 	err = nrf_modem_gnss_fix_retry_set(0);
-	if (err) {
+	if (err < 0) {
 		LOG_ERR("Failed to set GNSS fix retry %d", err);
 		return 0;
 	}
 
 	err = nrf_modem_gnss_fix_interval_set(1);
-	if (err) {
+	if (err < 0) {
 		LOG_ERR("Failed to set GNSS fix interval %d", err);
 		return 0;
 	}
@@ -119,7 +118,7 @@ int main(void)
 	LOG_INF("GNSS initialized");
 
 	err = nrf_modem_gnss_start();
-	if (err) {
+	if (err < 0) {
 		LOG_ERR("Failed to start GNSS, err: %d", err);
 		return 0;
 	}

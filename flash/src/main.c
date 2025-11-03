@@ -20,7 +20,7 @@ void single_sector_test(const struct device *flash_dev)
 
 	const size_t len = sizeof(expected);
 	uint8_t buf[sizeof(expected)];
-	int rc;
+	int err;
 
 	LOG_INF("Perform test on single sector");
 	/* Write protection needs to be disabled before each write or
@@ -33,16 +33,16 @@ void single_sector_test(const struct device *flash_dev)
 	/* Full flash erase if SPI_FLASH_TEST_REGION_OFFSET = 0 and
 	 * SPI_FLASH_SECTOR_SIZE = flash size
 	 */
-	rc = flash_erase(flash_dev, SPI_FLASH_TEST_REGION_OFFSET,
+	err = flash_erase(flash_dev, SPI_FLASH_TEST_REGION_OFFSET,
 			 SPI_FLASH_SECTOR_SIZE);
-	if (rc != 0) {
-		LOG_INF("Flash erase failed! %d", rc);
+	if (err < 0) {
+		LOG_INF("Failed to erase %d", err);
 	} else {
 		/* Check erased pattern */
 		memset(buf, 0, len);
-		rc = flash_read(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, buf, len);
-		if (rc != 0) {
-			LOG_INF("Flash read failed! %d", rc);
+		err = flash_read(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, buf, len);
+		if (err < 0) {
+			LOG_INF("Failed to read %d", err);
 			return;
 		}
 		if (memcmp(erased, buf, len) != 0) {
@@ -55,16 +55,16 @@ void single_sector_test(const struct device *flash_dev)
 	LOG_INF("Test 2: Flash write");
 
 	LOG_INF("Attempting to write %zu bytes", len);
-	rc = flash_write(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, expected, len);
-	if (rc != 0) {
-		LOG_INF("Flash write failed! %d", rc);
+	err = flash_write(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, expected, len);
+	if (err < 0) {
+		LOG_INF("Failed to write %d", err);
 		return;
 	}
 
 	memset(buf, 0, len);
-	rc = flash_read(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, buf, len);
-	if (rc != 0) {
-		LOG_INF("Flash read failed! %d", rc);
+	err = flash_read(flash_dev, SPI_FLASH_TEST_REGION_OFFSET, buf, len);
+	if (err < 0) {
+		LOG_INF("Failed to read %d", err);
 		return;
 	}
 
@@ -89,7 +89,11 @@ void single_sector_test(const struct device *flash_dev)
 
 int main(void)
 {
-    nrf_modem_lib_init();
+	int err;
+    err = nrf_modem_lib_init();
+    if(err < 0)
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);	
+		
     LOG_INF("=====FLASH EXAMPLE=====");
     
     if (!device_is_ready(flash_dev)) {

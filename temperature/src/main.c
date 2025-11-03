@@ -18,13 +18,21 @@ static uint16_t adc_buffer;
 
 int main(void)
 {
-    nrf_modem_lib_init();
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0)
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+
     LOG_INF("======TEMPERATURE EXAMPLE=====");
 
     int mv;
     float celsius;
 
-    gpio_pin_configure(tmp_vdd, PIN_TMP23X_VDD, GPIO_OUTPUT_HIGH);
+    err = gpio_pin_configure(tmp_vdd, PIN_TMP23X_VDD, GPIO_OUTPUT_HIGH);
+    if(err < 0){
+        LOG_ERR("Failed to config gpio pin %d", err);
+        return 0;
+    }
 
     /* adc init */
     channel_cfg.channel_id = 1;
@@ -43,10 +51,19 @@ int main(void)
     adc_sequence.oversampling = 4;
     adc_sequence.calibrate = true;
 
-    adc_channel_setup(tmp_dev, &channel_cfg);
+    err = adc_channel_setup(tmp_dev, &channel_cfg);
+    if(err < 0) {
+        LOG_ERR("Falied to set adc channel %d", err);
+        return 0;
+    }
 
     while(true) {
-        adc_read(tmp_dev, &adc_sequence);
+        err = adc_read(tmp_dev, &adc_sequence);
+        if(err < 0) {
+            LOG_INF("Failed to read adc: %d", err);
+            if(err == -EBUSY) continue;
+            else break;
+        }
         mv = adc_buffer;
         mv = (mv * 3000) / 16383; /* mv: 0~3000 */
         celsius = (float)((mv - 500)) / 10.0f;

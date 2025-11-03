@@ -17,24 +17,46 @@ static bool isconnected = false;
 
 int main(void)
 {
-    nrf_modem_lib_init();
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0) {
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+        return 0;
+    }
 
     LOG_INF("=====UDP EXAMPLE=====");
     
     struct sockaddr_in sa;
     int ret;
 
-    lte_lc_connect();
+    err = lte_lc_connect();
+    if(err < 0) {
+        LOG_ERR("Failed to connect lte %d", err);
+        return 0;
+    }
 
     socknum = zsock_socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if(socknum < 0) {
+        LOG_ERR("Failed to create socket %d", -errno);
+        return 0;
+    }
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(7777);
-    zsock_inet_pton(AF_INET, "43.200.166.133", &sa.sin_addr); /* echo server IP address */
+    err = zsock_inet_pton(AF_INET, "43.200.166.133", &sa.sin_addr); /* echo server IP address */
+    if(err == 0) {
+        LOG_ERR("Invaild IPv4 dotted-decimal string");
+        return 0;
+    }
+    else if(err < 0) {
+        LOG_ERR("Failed to parse local IPv4 address %d", -errno);
+        return 0;
+    }
      
-	ret = zsock_connect(socknum, (struct sockaddr *)&sa, sizeof(struct sockaddr_in));
-	if(ret < 0) {
-		LOG_ERR("connect failed:%d", ret);
+	err = zsock_connect(socknum, (struct sockaddr *)&sa, sizeof(struct sockaddr_in));
+	if(err < 0) {
+		LOG_ERR("connect failed:%d", -errno);
+        return 0;
 	}
     LOG_INF("udp connected...");
     isconnected = true;
@@ -44,13 +66,16 @@ int main(void)
     int txcnt = 5;
     while(txcnt--){
         uint8_t txbuf[] = "this is test for udp";
-        LOG_INF("send.....%d", txcnt);
         ret = zsock_send(socknum, txbuf, sizeof(txbuf), 0);
+        if(ret < 0) {
+            LOG_ERR("Failed to send %d", -errno);
+            break;
+        }
+        LOG_INF("send %d bytes...%d", ret, txcnt);
         k_msleep(5000);
     }
 
     isconnected = false;
-
     LOG_INF("udp close...");
     LOG_INF("main close...");
 
@@ -92,17 +117,19 @@ static void udp_thread(void)
         }
         if ((fds[0].revents & ZSOCK_POLLIN) == ZSOCK_POLLIN) {
             ret = zsock_recv(fds[0].fd, (void *)rxpktbuf, sizeof(rxpktbuf), 0);
-            if (ret <= 0) {
+            if (ret < 0) {
                 LOG_ERR("recv() failed: (%d)", -errno);
+                break;
             }
             else if(ret >= 0) {
-                LOG_INF("recv(%d): %.*s", ret, ret, rxpktbuf);
+                LOG_INF("recv(%d bytes): %.*s", ret, ret, rxpktbuf);
             }
         } 
     }
 
-    zsock_close(socknum);
-    lte_lc_power_off();
+    isconnected = false;
+    (void)zsock_close(socknum);
+    (void)lte_lc_power_off();
     LOG_INF("udp thread close...");
     return;
 }

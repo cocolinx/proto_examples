@@ -169,7 +169,12 @@ static void mqtt_evt_handler(struct mqtt_client *const client, const struct mqtt
 
 int main(void)
 {
-    nrf_modem_lib_init();
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0) {
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+        return 0;
+    }
 
     LOG_INF("=====MQTT EXAMPLE=====");
 
@@ -184,12 +189,20 @@ int main(void)
         .ai_socktype = SOCK_STREAM
     };
 
-    lte_lc_connect();
+    err = lte_lc_connect();
+    if(err < 0) {
+        LOG_ERR("Failed to connect lte %d", err);
+        return 0;
+    }
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(1883);
 
-    zsock_getaddrinfo("test.mosquitto.org", NULL, &hints, &res); /* get ip address */
+    err = zsock_getaddrinfo("test.mosquitto.org", NULL, &hints, &res); /* get ip address */
+    if(err) {
+        LOG_ERR("Failed to get addr info %d", err);
+        return 0;
+    }
     sa.sin_addr = ((struct sockaddr_in *)res->ai_addr)->sin_addr;
     zsock_freeaddrinfo(res);
 
@@ -214,8 +227,11 @@ int main(void)
 
     /* mqtt connection */
     LOG_INF("mqtt connecting...");
-    ret = mqtt_connect(&client);
-    if (ret) { LOG_ERR("mqtt_connect rc=%d", ret); return 0; }
+    err = mqtt_connect(&client);
+    if (err < 0) { 
+        LOG_ERR("Failed to connect mqtt %d", err); 
+        return 0; 
+    }
 
     pfd.fd = client.transport.tcp.sock;
     pfd.events = ZSOCK_POLLIN;
@@ -237,7 +253,11 @@ int main(void)
     sub_list.list_count = 1;
     sub_list.message_id = msg_id;
 
-    ret = mqtt_subscribe(&client, &sub_list);
+    err = mqtt_subscribe(&client, &sub_list);
+    if(err < 0) {
+        LOG_ERR("Failed to subscribe mqtt %d", err);
+        return 0;
+    }
 
     /* mqtt publish */
     const char *msg = "hello cocolinx";
@@ -254,12 +274,22 @@ int main(void)
 
     while(iter--) {
         LOG_INF("mqtt publish...%d", iter);
-        ret = mqtt_publish(&client, &pub_param);
+        err = mqtt_publish(&client, &pub_param);
+        if(err < 0) {
+            LOG_ERR("Failed to publish %d", err);
+            break;
+        }
         k_msleep(2000);
     }
 
-    mqtt_disconnect(&client, NULL);
+    err = mqtt_disconnect(&client, NULL);
+    if(err < 0){
+        LOG_ERR("Failed to disconnect mqtt %d", err);
+        return 0;
+    }
     LOG_INF("mqtt disconnected...");
+    (void)lte_lc_power_off();
+    LOG_INF("main thread close...");
 
     return 0;
 }

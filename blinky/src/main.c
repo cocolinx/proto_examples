@@ -5,36 +5,51 @@
 #include <modem/nrf_modem_lib.h>
 #include <zephyr/drivers/gpio.h>
 
+/* onboard LED pin num */
 #define PIN_LED_0       16
+/* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
 
 LOG_MODULE_REGISTER(main_blinky, CONFIG_LOG_DEFAULT_LEVEL);
 
-static const struct device *leds = DEVICE_DT_GET(DT_NODELABEL(gpio0));
+static const struct device *led = DEVICE_DT_GET(DT_NODELABEL(gpio0));
 
 int main(void)
 {
-    nrf_modem_lib_init();
-    
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0)
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+
     LOG_INF("=====BLINKY EXAMPLE=====");
-    
-    int8_t ret;
-    int iter = 5;
 
-    if(!device_is_ready(leds)) return 0;
+    if(!device_is_ready(led)) return 0;
 
-    // low(on), high(off)
-    gpio_pin_configure(leds, PIN_LED_0, GPIO_OUTPUT_HIGH);
-    
-    while(iter--){
-        ret = gpio_pin_set_raw(leds, PIN_LED_0, 0);
-        LOG_INF("turn on: %d", PIN_LED_0);
+    /* low(on), high(off) */
+    err = gpio_pin_configure(led, PIN_LED_0, GPIO_OUTPUT_HIGH);
+    if(err < 0) {
+        LOG_ERR("Failed to config gpio pin %d", err);
+        return 0;
+    }
+    while(true){
+        /* turn on */
+        err = gpio_pin_set_raw(led, PIN_LED_0, 0);
+        if(err < 0) {
+            LOG_ERR("Failed to set gpio pin %d", err);
+            break;
+        }
+        LOG_INF("turn on (PIN: %d)", PIN_LED_0);
         k_msleep(SLEEP_TIME_MS);
-        ret = gpio_pin_set_raw(leds, PIN_LED_0, 1);
-        LOG_INF("turn off: %d", PIN_LED_0);
+
+        /* turn off */
+        err = gpio_pin_set_raw(led, PIN_LED_0, 1);
+        if(err < 0) {
+            LOG_ERR("Failed to set gpio pin %d", err);
+            break;
+        }
+        LOG_INF("turn off (PIN: %d)", PIN_LED_0);
         k_msleep(SLEEP_TIME_MS);
     }
 
-    LOG_INF("main close...");
     return 0;
 }

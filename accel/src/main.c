@@ -22,7 +22,7 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
     int err;
     err = sensor_sample_fetch_chan(dev, SENSOR_CHAN_ACCEL_XYZ);
     if (err) {
-        LOG_INF("sensor_sample_fetch failed: %s, %d", strerror(-err), err);
+        LOG_ERR("sensor_sample_fetch failed: %s, %d", strerror(-err), err);
         return;
     }
 	k_sem_give(&sem);
@@ -30,7 +30,14 @@ static void trigger_handler(const struct device *dev, const struct sensor_trigge
 
 int main(void)
 {
-    nrf_modem_lib_init();
+    int err;
+    err = nrf_modem_lib_init();
+    if(err < 0) {
+        LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
+        return 0;
+    }
+
+    LOG_INF("=====ACCELEROMETER EXAMPLE=====");
 
     struct sensor_value data[3];
     struct sensor_trigger trig = {
@@ -38,16 +45,14 @@ int main(void)
             .chan = SENSOR_CHAN_ACCEL_XYZ,
     };
 
-    int ret;
-
     if (!device_is_ready(dev)) {
-        LOG_INF("Device %s is not ready\n", dev->name);
+        LOG_ERR("Device %s is not ready\n", dev->name);
         return 0;
     }
 
-    ret = sensor_trigger_set(dev, &trig, trigger_handler);
-    if (ret != 0) {
-        LOG_INF("Could not set trigger, error %d", ret);
+    err = sensor_trigger_set(dev, &trig, trigger_handler);
+    if (err != 0) {
+        LOG_ERR("Could not set trigger, error %d", err);
         return 0;
     }
 
