@@ -26,8 +26,13 @@ int main(void)
 
     LOG_INF("=====TCP EXAMPLE=====");
     
-    struct sockaddr_in sa;
     int ret;
+    struct sockaddr_in sa;
+    struct zsock_addrinfo *res = NULL;  
+    struct zsock_addrinfo hints = {
+        .ai_family   = AF_INET,
+        .ai_socktype = SOCK_STREAM
+    };
 
     err = lte_lc_connect();
     if(err < 0) {
@@ -43,15 +48,14 @@ int main(void)
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(7777);
-    err = zsock_inet_pton(AF_INET, "43.200.166.133", &sa.sin_addr); /* echo server IP address */
-    if(err == 0) {
-        LOG_ERR("Invaild IPv4 dotted-decimal string");
+
+    err = zsock_getaddrinfo("echo.cocolinx.com", NULL, &hints, &res); /* get ip address */
+    if(err) {
+        LOG_ERR("Failed to get addr info %d", err);
         return 0;
     }
-    else if(err < 0) {
-        LOG_ERR("Failed to parse local IPv4 address %d", -errno);
-        return 0;
-    }
+    sa.sin_addr = ((struct sockaddr_in *)res->ai_addr)->sin_addr;
+    zsock_freeaddrinfo(res);
 
 	err = zsock_connect(socknum, (struct sockaddr *)&sa, sizeof(struct sockaddr_in));
 	if(err < 0) {
