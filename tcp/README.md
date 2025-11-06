@@ -10,4 +10,4 @@ You receive the exact same string you sent back.
 ### Setup
 For the most up to date instructions, please see:
 
-[CocoLinx Docs]()
+[CocoLinx Docs](https://cocolinx.gitbook.io/cocolinx-docs/example-code)

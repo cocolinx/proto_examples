@@ -8,4 +8,4 @@ You can test your proto I/O Pins.
 ### Setup
 For the most up to date instructions, please see:
 
-[CocoLinx Docs]()
+[CocoLinx Docs](https://cocolinx.gitbook.io/cocolinx-docs/example-code)

@@ -8,5 +8,5 @@ You need to connect led to pin0.28 and GND in our board.
 ### Setup
 For the most up to date instructions, please see:
 
-[CocoLinx Docs]()
+[CocoLinx Docs](https://cocolinx.gitbook.io/cocolinx-docs/example-code)
 

@@ -8,5 +8,5 @@ This example used NRF_SAADC_INPUT_AIN2(p0.15) to measure analog data.
 ### Setup
 For the most up to date instructions, please see:
 
-[CocoLinx Docs]()
+[CocoLinx Docs](https://cocolinx.gitbook.io/cocolinx-docs/example-code)
 
