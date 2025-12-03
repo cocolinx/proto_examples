@@ -7,7 +7,7 @@
 
 #define STEP_DELAY_MS  5 
 
-LOG_MODULE_REGISTER(gpio0_sweep, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const uint8_t PINS[] = {
     8, 9, 15, 17, 19, 20, 29, 30, 31

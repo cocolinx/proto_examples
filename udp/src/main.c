@@ -7,7 +7,7 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/net/net_ip.h>
 
-LOG_MODULE_REGISTER(main_udp, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static K_SEM_DEFINE(udpsem_start, 0, 1);
 
@@ -19,13 +19,13 @@ int main(void)
 {
     int err;
     err = nrf_modem_lib_init();
-    if(err < 0) {
+    if(err) {
         LOG_ERR("Unable to initialize modem lib. (err: %d)", err);
         return 0;
     }
 
     LOG_INF("=====UDP EXAMPLE=====");
-    
+
     int ret;
     struct sockaddr_in sa;
     struct zsock_addrinfo *res = NULL;  
@@ -34,8 +34,26 @@ int main(void)
         .ai_socktype = SOCK_STREAM
     };
 
+    err = nrf_modem_at_printf("AT+CFUN=0");
+    if(err) {
+        LOG_ERR("Failed to set AT+CFUN=0 : %d", err);
+        return 0;
+    }
+    k_msleep(1000);
+
+    err = lte_lc_system_mode_set(LTE_LC_SYSTEM_MODE_LTEM, LTE_LC_SYSTEM_MODE_PREFER_LTEM);
+	if(err) {
+		LOG_ERR("mlink_init:system mode(err=%d)", err);
+	}
+
+    err = nrf_modem_at_printf("AT+COPS=1,2,\"45005\""); /* connect to skt */
+    if(err) {
+        LOG_ERR("Failed to set AT+COPS %d", err);
+        return 0;
+    }
+
     err = lte_lc_connect();
-    if(err < 0) {
+    if(err) {
         LOG_ERR("Failed to connect lte %d", err);
         return 0;
     }
@@ -58,7 +76,7 @@ int main(void)
     zsock_freeaddrinfo(res);
      
 	err = zsock_connect(socknum, (struct sockaddr *)&sa, sizeof(struct sockaddr_in));
-	if(err < 0) {
+	if(err) {
 		LOG_ERR("connect failed:%d", -errno);
         return 0;
 	}

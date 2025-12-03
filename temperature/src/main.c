@@ -8,7 +8,7 @@
 #define AIN_TMP23X      NRF_SAADC_INPUT_AIN0
 #define PIN_TMP23X_VDD  28 
 
-LOG_MODULE_REGISTER(main_temperature, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const struct device *tmp_vdd = DEVICE_DT_GET(DT_NODELABEL(gpio0));
 static const struct device *tmp_dev = DEVICE_DT_GET(DT_NODELABEL(adc));

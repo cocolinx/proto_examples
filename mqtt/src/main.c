@@ -13,7 +13,7 @@
 #define PUB_TOPIC     "cocolinx/examples"
 #define KEEPALIVE_SEC  60
 
-LOG_MODULE_REGISTER(main_mqtt, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static K_SEM_DEFINE(udpsem_start, 0, 1);
 

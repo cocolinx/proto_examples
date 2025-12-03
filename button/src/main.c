@@ -10,8 +10,8 @@
 /* prevent chattering */
 #define DEBOUNCE_MS 20
 
-LOG_MODULE_REGISTER(main_button, CONFIG_LOG_DEFAULT_LEVEL);
-static const struct device *btn = DEVICE_DT_GET(DT_NODELABEL(gpio0));
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
+static const struct gpio_dt_spec btn = GPIO_DT_SPEC_GET(DT_ALIAS(button0), gpios);
 
 static void btn_debounce_work_handler(struct k_work *work);
 K_WORK_DELAYABLE_DEFINE(btn_debounce_work, btn_debounce_work_handler);
@@ -24,13 +24,12 @@ static void btn_isr(const struct device *port, struct gpio_callback *cb, uint32_
 
 static void btn_debounce_work_handler(struct k_work *work)
 {
-    int ret = gpio_pin_get_raw(btn, PIN_BUTTON_0); 
+    int ret = gpio_pin_get_dt(&btn); 
     if(ret < 0) {
         LOG_ERR("Failed to get gpio pin status %d", ret);
         return;
     }
-    bool pressed = (ret == 0) ? true : false;
-    if(pressed) LOG_INF("button pressed");
+    if(ret) LOG_INF("button pressed");
     else LOG_INF("button released");
 }
 
@@ -43,24 +42,24 @@ int main(void)
 
     LOG_INF("=====BUTTON EXAMPLE=====");
     
-    err = gpio_pin_configure(btn, PIN_BUTTON_0, GPIO_INPUT);
+    err = gpio_pin_configure_dt(&btn, GPIO_INPUT);
     if(err < 0) {
         LOG_ERR("Failed to config gpio pin %d", err);
         return 0;
     }
-    err = gpio_pin_interrupt_configure(btn, PIN_BUTTON_0, GPIO_INT_DISABLE);
+    err = gpio_pin_interrupt_configure_dt(&btn, GPIO_INT_DISABLE);
     if(err < 0) {
         LOG_ERR("Failed to config gpio pin interrupt %d", err);
         return 0;
     }
 
     gpio_init_callback(&btn_cb, btn_isr, BIT(PIN_BUTTON_0));
-    err = gpio_add_callback(btn, &btn_cb);
+    err = gpio_add_callback_dt(&btn, &btn_cb);
     if(err < 0) {
         LOG_ERR("Failed to add gpio callback %d", err);
         return 0;
     }
-    err = gpio_pin_interrupt_configure(btn, PIN_BUTTON_0, GPIO_INT_EDGE_BOTH); /* rising | falling */
+    err = gpio_pin_interrupt_configure_dt(&btn, GPIO_INT_EDGE_BOTH); /* rising | falling */
     if(err < 0) {
         LOG_ERR("Failed to config gpio pin interrupt %d", err);
         return 0;

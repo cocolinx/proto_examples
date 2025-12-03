@@ -1,0 +1,8 @@
+board:
+  name: cocolinx_proto
+  full_name: nRF9151 Proto
+  vendor: cocolinx
+  socs:
+  - name: nrf9151
+    variants:
+    - name: 'ns'

@@ -7,36 +7,35 @@
 #define STACKSIZE 1024
 /* scheduling priority used by each thread */
 #define PRIORITY 7
-#define PIN_LED_0 16
 
-LOG_MODULE_REGISTER(main_blinky, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
-static const struct device *led = DEVICE_DT_GET(DT_NODELABEL(gpio0));
+static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
 static void blink(uint32_t sleep_ms)
 {
-    if(!device_is_ready(led)) return;
+    if(!device_is_ready(led0.port)) return;
 
     int err;
-    err = gpio_pin_configure(led, PIN_LED_0, GPIO_OUTPUT_HIGH);
+    err = gpio_pin_configure_dt(&led0, GPIO_OUTPUT_INACTIVE);
     if(err < 0) {
-        LOG_ERR("Failed to config gpio %d pin %d", PIN_LED_0, err);
+        LOG_ERR("Failed to config gpio pin %d", err);
         return;
     }
     while(true) {
-        err = gpio_pin_set_raw(led, PIN_LED_0, 0); /* turn on */
+        err = gpio_pin_set_dt(&led0, 1); /* turn on */
         if(err < 0) {
-            LOG_ERR("Failed to set gpio %d pin %d", PIN_LED_0, err);
+            LOG_ERR("Failed to set gpio pin %d", err);
             break;
         }
-        LOG_INF("turn on (PIN: %d)", PIN_LED_0);
+        LOG_INF("turn on");
         k_msleep(sleep_ms);
-        err = gpio_pin_set_raw(led, PIN_LED_0, 1); /* turn off */
+        err = gpio_pin_set_dt(&led0, 0); /* turn off */
         if(err < 0) {
-            LOG_ERR("Failed to set gpio %d pin %d", PIN_LED_0, err);
+            LOG_ERR("Failed to set gpio pin %d", err);
             break;
         }
-        LOG_INF("turn off (PIN: %d)", PIN_LED_0);
+        LOG_INF("turn off");
         k_msleep(sleep_ms);
     }
 }

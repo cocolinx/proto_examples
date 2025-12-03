@@ -1,0 +1,12 @@
+identifier: cocolinx_proto/nrf9151/ns
+name: CocoLinx Proto Non-Secure
+type: mcu
+arch: arm
+toolchain:
+  - gnuarmemb
+  - xtools
+  - zephyr
+ram: 128
+flash: 192
+supported:
+  - watchdog

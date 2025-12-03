@@ -1,0 +1,14 @@
+identifier: cocolinx_som/nrf9151
+name: CocoLinx Proto
+type: mcu
+arch: arm
+toolchain:
+  - gnuarmemb
+  - xtools
+  - zephyr
+ram: 88
+flash: 1024
+supported:
+  - watchdog
+  - counter
+  

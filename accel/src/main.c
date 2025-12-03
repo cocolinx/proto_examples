@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <zephyr/drivers/i2c.h>
 
-LOG_MODULE_REGISTER(main_accel, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 K_SEM_DEFINE(sem, 0, 1); /* starts off "not available" */
 

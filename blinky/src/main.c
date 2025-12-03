@@ -5,14 +5,9 @@
 #include <modem/nrf_modem_lib.h>
 #include <zephyr/drivers/gpio.h>
 
-/* onboard LED pin num */
-#define PIN_LED_0       16
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS   1000
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
-LOG_MODULE_REGISTER(main_blinky, CONFIG_LOG_DEFAULT_LEVEL);
-
-static const struct device *led = DEVICE_DT_GET(DT_NODELABEL(gpio0));
+static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
 int main(void)
 {
@@ -23,32 +18,37 @@ int main(void)
 
     LOG_INF("=====BLINKY EXAMPLE=====");
 
-    if(!device_is_ready(led)) return 0;
-
-    /* low(on), high(off) */
-    err = gpio_pin_configure(led, PIN_LED_0, GPIO_OUTPUT_HIGH);
-    if(err < 0) {
-        LOG_ERR("Failed to config gpio pin %d", err);
+    if(!device_is_ready(led0.port)) 
+    {
+        LOG_ERR("LED device not ready");
         return 0;
     }
-    while(true){
+
+    /* low(on), high(off) */
+    err = gpio_pin_configure_dt(&led0, GPIO_OUTPUT_INACTIVE);
+    if(err < 0) 
+    {
+        LOG_ERR("Failed to config LED %d", err);
+        return 0;
+    }
+
+    while(true)
+    {
         /* turn on */
-        err = gpio_pin_set_raw(led, PIN_LED_0, 0);
+        err = gpio_pin_set_dt(&led0, 1);
         if(err < 0) {
             LOG_ERR("Failed to set gpio pin %d", err);
             break;
         }
-        LOG_INF("turn on (PIN: %d)", PIN_LED_0);
-        k_msleep(SLEEP_TIME_MS);
+        k_msleep(1000);
 
         /* turn off */
-        err = gpio_pin_set_raw(led, PIN_LED_0, 1);
+        err = gpio_pin_set_dt(&led0, 0);
         if(err < 0) {
             LOG_ERR("Failed to set gpio pin %d", err);
             break;
         }
-        LOG_INF("turn off (PIN: %d)", PIN_LED_0);
-        k_msleep(SLEEP_TIME_MS);
+        k_msleep(1000);
     }
 
     return 0;

@@ -6,7 +6,7 @@
 #include <zephyr/drivers/adc.h>
 #include <hal/nrf_saadc.h>
 
-LOG_MODULE_REGISTER(main_adc, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const struct device *adc_dev = DEVICE_DT_GET(DT_NODELABEL(adc));
 static struct adc_channel_cfg channel_cfg;

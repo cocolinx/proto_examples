@@ -6,9 +6,10 @@
 #include <modem/nrf_modem_lib.h>
 #include <modem/lte_lc.h>
 
-LOG_MODULE_REGISTER(main_gnss, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static struct nrf_modem_gnss_pvt_data_frame agnss_data;
+struct nrf_modem_gnss_pvt_data_frame pvt;
 
 static void gnss_event_handler(int event)
 {
@@ -16,15 +17,26 @@ static void gnss_event_handler(int event)
 
 	switch (event) {
 	case NRF_MODEM_GNSS_EVT_PVT:
-		LOG_INF("NRF_MODEM_GNSS_EVT_PVT");
-        retval = nrf_modem_gnss_read(&agnss_data, sizeof(agnss_data), NRF_MODEM_GNSS_DATA_PVT);
+		retval = nrf_modem_gnss_read(&agnss_data, sizeof(agnss_data), NRF_MODEM_GNSS_DATA_PVT);
+		for (int i = 0; i < NRF_MODEM_GNSS_MAX_SATELLITES; ++i) {
+			/* SV number 0 indicates no satellite */
+			if (pvt.sv[i].sv) {
+				LOG_INF("SV:%3d sig: %d c/n0:%4d el:%3d az:%3d in-fix: %d unhealthy: %d",
+					pvt.sv[i].sv, pvt.sv[i].signal, pvt.sv[i].cn0,
+					pvt.sv[i].elevation, pvt.sv[i].azimuth,
+					(pvt.sv[i].flags & NRF_MODEM_GNSS_SV_FLAG_USED_IN_FIX) ? 1 : 0,
+					(pvt.sv[i].flags & NRF_MODEM_GNSS_SV_FLAG_UNHEALTHY) ? 1 : 0);
+			}
+		}
 		if (retval) {
 			LOG_ERR("nrf_modem_gnss_read failed, err %d", retval);
 		}
         if (agnss_data.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
 			LOG_INF("latitude:   %f", agnss_data.latitude);
         	LOG_INF("longitude:  %f", agnss_data.longitude);
-		} else {}
+		} else {
+			LOG_INF("NRF_MODEM_GNSS_EVT_PVT");
+		}
 		break;
 	case NRF_MODEM_GNSS_EVT_FIX:
 		LOG_DBG("NRF_MODEM_GNSS_EVT_FIX");
@@ -73,7 +85,7 @@ int main(void)
 
 	err = nrf_modem_at_printf("AT%%XCOEX0=1,1,1565,1586");
 	if(err != 0) {
-		LOG_ERR("Falied to set modem %d", err);
+		LOG_ERR("Falied to config COEX pin %d", err);
 		return 0;
 	}
 
@@ -89,7 +101,7 @@ int main(void)
 		return 0;
 	}
 
-	uint16_t nmea_mask = NRF_MODEM_GNSS_NMEA_GGA_MASK;
+	uint16_t nmea_mask = NRF_MODEM_GNSS_NMEA_GGA_MASK | NRF_MODEM_GNSS_NMEA_GLL_MASK;
 	err = nrf_modem_gnss_nmea_mask_set(nmea_mask);
 	if (err < 0) {
 		LOG_ERR("Failed to set GNSS NMEA mask %d", err);

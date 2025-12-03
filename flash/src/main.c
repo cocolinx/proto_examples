@@ -8,7 +8,7 @@
 #define SPI_FLASH_TEST_REGION_OFFSET 0xff000
 #define SPI_FLASH_SECTOR_SIZE        4096 /* 4kB */
 
-LOG_MODULE_REGISTER(main_flash, CONFIG_LOG_DEFAULT_LEVEL);
+LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const struct device *flash_dev = DEVICE_DT_GET(DT_ALIAS(by25q0));
 
