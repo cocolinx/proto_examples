@@ -43,6 +43,7 @@
 		led0 = &led0;
 		button0 = &button0;
 		button1 = &button1;
+		accel0 = &lis2dw12_accel;
 	};
 };
 
@@ -83,13 +84,29 @@
 // 	pinctrl-names = "default", "sleep";	
 // };
 
-// &i2c1 {
-// 	compatible = "nordic,nrf-twim";
-// 	status = "okay";
-// 	pinctrl-0 = <&i2c1_default>;
-// 	pinctrl-1 = <&i2c1_sleep>;
-// 	pinctrl-names = "default", "sleep";
-// };
+&i2c2 {
+	compatible = "nordic,nrf-twim";
+	status = "okay";
+	pinctrl-0 = <&i2c1_default>;
+	pinctrl-1 = <&i2c1_sleep>;
+	pinctrl-names = "default", "sleep";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	lis2dw12_accel: lis2dw12@19 {
+		compatible = "st,lis2dw12";
+		status = "okay";
+		reg = <0x19>;
+		odr = <1>; /* set odr to change output data rate */
+		tap-mode = <1>;
+		tap-threshold = <12>, <12>, <12>;
+		range = <2>;
+		power-mode = <0>;
+		tap-shock = <0x03>;
+		tap-quiet = <0x03>;
+		tap-latency = <0x03>;
+		irq-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+	};
+};
 
 // &pwm0 {
 // 	status = "okay";

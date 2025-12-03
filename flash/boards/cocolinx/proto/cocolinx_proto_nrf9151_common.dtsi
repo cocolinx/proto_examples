@@ -43,6 +43,7 @@
 		led0 = &led0;
 		button0 = &button0;
 		button1 = &button1;
+		by25q0 = &BY25Q_spi;
 	};
 };
 
@@ -74,15 +75,26 @@
 // 	pinctrl-names = "default", "sleep";
 // };
 
-// &spi3 {
-// 	compatible = "nordic,nrf-spim";
-// 	status = "okay";
-// 	cs-gpios = < &gpio0 30 GPIO_ACTIVE_LOW >;
-// 	pinctrl-0 = <&spi3_default>;
-// 	pinctrl-1 = <&spi3_sleep>;
-// 	pinctrl-names = "default", "sleep";	
-// };
-
+&spi3 {
+	compatible = "nordic,nrf-spim";
+	status = "okay";
+	cs-gpios = < &gpio0 10 GPIO_ACTIVE_LOW >;
+	pinctrl-0 = <&spi3_default>;
+	pinctrl-1 = <&spi3_sleep>;
+	pinctrl-names = "default", "sleep";	
+	
+	BY25Q_spi: spi-nor-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <24000000>;
+		size = <DT_SIZE_M(32)>; /* 32 Mbits */
+		status = "okay";
+		jedec-id = [68 40 16];
+		has-dpd;
+		t-enter-dpd = <3500>;
+		t-exit-dpd = <3500>;
+	};
+};
 // &i2c1 {
 // 	compatible = "nordic,nrf-twim";
 // 	status = "okay";
