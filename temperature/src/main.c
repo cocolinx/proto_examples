@@ -25,7 +25,7 @@ int main(void)
 
     LOG_INF("======TEMPERATURE EXAMPLE=====");
 
-    int mv;
+    uint16_t mv;
     float celsius;
 
     err = gpio_pin_configure(tmp_vdd, PIN_TMP23X_VDD, GPIO_OUTPUT_HIGH);
@@ -36,7 +36,7 @@ int main(void)
 
     /* adc init */
     channel_cfg.channel_id = 1;
-    channel_cfg.gain = ADC_GAIN_1_5; /* 3.0v */
+    channel_cfg.gain = ADC_GAIN_1_4;
     channel_cfg.reference = ADC_REF_INTERNAL;
     channel_cfg.acquisition_time = ADC_ACQ_TIME(ADC_ACQ_TIME_MICROSECONDS, 40);
     channel_cfg.differential = false;
@@ -56,7 +56,6 @@ int main(void)
         LOG_ERR("Falied to set adc channel %d", err);
         return 0;
     }
-
     while(true) {
         err = adc_read(tmp_dev, &adc_sequence);
         if(err < 0) {
@@ -65,7 +64,7 @@ int main(void)
             else break;
         }
         mv = adc_buffer;
-        mv = (mv * 3000) / 16383; /* mv: 0~3000 */
+        mv = (mv * 2400) / 16383; /* mv: 0~2400 */
         celsius = (float)((mv - 500)) / 10.0f;
         LOG_INF("temperature(celsius): %f", celsius);
         k_msleep(1000);
