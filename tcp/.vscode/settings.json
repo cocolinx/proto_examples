@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "socket.h": "c",
-        "nrf_modem.h": "c",
-        "net_ip.h": "c"
-    }
-}

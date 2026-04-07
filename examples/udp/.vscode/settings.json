@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "nrf_modem.h": "c"
+    },
+  "nrf-connect.boardRoots": [
+    "${workspaceFolder}/../../"
+  ]
+}
